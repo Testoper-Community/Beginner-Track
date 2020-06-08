@@ -15,7 +15,7 @@ class newAccount:
         # 3. If not, save the new records and send success msg to user
         else:
             df2 = df.append(pd.DataFrame([[username, password]], columns=df.columns))
-            df2.to_csv(r'/Users/nadiabeshir/Desktop/todoUsers.csv', index=False)
+            df2.to_csv(r'/todoUsers.csv', index=False)
             print("Account saved successfully. Please login to view or create your todo list.")
 
 class existingAccount:
@@ -48,7 +48,7 @@ class TODOtask:
         self.time = time
         self.description = description
         df2 = df.append(pd.DataFrame([[username, date, time, description]], columns=df.columns))
-        df2.to_csv(r'/Users/nadiabeshir/Desktop/todoTasks.csv', index=False)
+        df2.to_csv(r'/todoTasks.csv', index=False)
         print("Record saved successfully.")
 
 def viewTODO(xUser):
@@ -68,7 +68,7 @@ def addTODO(xUser):
 def invalidOption():
     print("I'm sorry, I did not understand your selection. Please enter the corresponding letter for your response.")
 
-def Python_TODO():
+def TODO_bot():
     ans1 = input("Welcome to your TODO list. Would you like to [R] resgiter or [S] sign-in? \n")
     if ans1 == 'R':
         newAccount(input("Please type a username. \n"), input("Now please type a password. \n"))
@@ -77,4 +77,4 @@ def Python_TODO():
     else:
         invalidOption()
 
-Python_TODO()
+TODO_bot()
