@@ -1,73 +1,64 @@
-import csv
-# import os.path
-class User():
-    def __init__(self, username = None, password = None, confirm_password = None):
+import db
+from db import session, User, Task
+from datetime import datetime, date
+
+# Class to register first users
+class Register:
+    def __init__(self, username, password, confirm_password):
         self.username = username
         self.password = password
         self.confirm_password = confirm_password
 
+    # This is to store user data into the db. Store user id, username, password, and corresponding confirm password
+    def saveDetails(self):
+        user = User(self.username, self.password, self.confirm_password)
+        session.add(user)
+        session.commit()
 
-    def registerUser(self):
-
-        # testfields = self.test(username, password, confirm_password)
-        # if testfields == 1:
-        #     print(username, password, confirm_password)
-        db = 'db/db.csv'
-        with open (db, 'a+') as file:
-            fieldnames = ['User_name', 'Password', 'Confirm_password']
-            store = csv.DictWriter(file, fieldnames=fieldnames, delimiter='\t')
-            store.writeheader
-            store.writerow({"User_name": self.username, "Password": self.password, "Confirm_password": self.confirm_password})
-        # else:
-        #     exit
-
-    def loginUser(self, username, password):
-            # test(username, password)
-        db = 'db/db.csv'
-        with open(db, 'r') as file:
-            fieldnames = ['User_name', 'Password', 'Confirm_password']
-            data = csv.DictReader(file, fieldnames=fieldnames)
-            for user in data:
-                # print(user['User_name'], user['Password'])
-                # Stop here unable to compare fields name with row. not working i don't know why
-                if user['User_name'] == username and user['Password'] == password:
-                    print("Login")
-
-class FiledErrors():
-    emptyerror = "This field is required"
-    passwordmismatch = "Enter same password as confirm password"
-    lengtherror = " field should be more than 5 chars min"
+# class to log in an existing user. check on username and password
+class Login:
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+    # method to check if user exist in the db
+    def confirmUser(self):
+        result = session.query(User).filter(User.username == self.username). \
+            filter(User.password == self.password)
+        for user in result:
+            return user.id
         
-    def __init__(self):
-        pass
+# Class to fetch user existing todo. 
+class ViewTask:
+    def __init__(self, currennt_user):
+        self.currennt_user = currennt_user
 
-    def fieldcheck(self, field):
-        if (field == ''):
-            return FiledErrors.emptyerror
-        elif (len(field) < 5):
-            return FiledErrors.lengtherror
-        else:
-            return field
-    
-    def password_match(self, password, confirm_password):
-        if (password != confirm_password):
-            return FiledErrors.passwordmismatch
-        else:
-            return password, confirm_password
+    # method to list user todos if any exist
+    def view(self):
+        for user, task in session.query(User, Task).\
+            filter(Task.user_id == self.currennt_user).\
+            all():
+            print(task.title)
 
+
+# Class to add new todo and store into db. with parameters["Title", "Descriptions", "Date_Created", "Due_Date", "User_foriegn key"]
+class CreateTask(Login):
+    def __init__(self, title, description, date_created, due_date, user_id=""):
+        self.title = title
+        self.description = description
+        self.date_created = date_created
+        self.due_date = due_date
+        # self.user_id = user_id
     
 
-        
+    # method to store user todo with associated user
+    def createTask(self):
+        current_user = super().confirmUser()
+        if current_user == None:
+            print("\nInvalid credentials")
+        else: 
+            task = CreateTask(self.title, self.description, self.date_created, self.due_date, current_user)
+            session.add(task)
+            session.commit()
+            print("You have successfully add task")
 
 
-    # signup = User(username, password, confirm_password)
-    # # test = signup.test(username = username, password = password, confirm_password = confirm_password)
-    # # test = signup.test(username = username, password = password, confirm_password = confirm_password)
-    # signup.registerUser()
-
-
-
-
-# user = User
-# user.registerUser('name')
-# print(user.loginUser('name'))
