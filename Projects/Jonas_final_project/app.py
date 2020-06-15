@@ -1,75 +1,132 @@
-from user import User, FiledErrors
+from user import Register, Login, ViewTask, CreateTask
 
-program_name = "Todo"
-intro = "First time please enter '1' to Signup \nEnter '2' if already have an account\n"
-print(intro)
-signup_or_login = int(input("Login? Enetr 1: \n" + "Signup? Enter 2: \n\n" + "Action here....  "))
+# method to view specific user todos
+def viewtask(current_user):
+    viewtask = ViewTask(current_user)   
+    viewtask.view()     
 
-validate = FiledErrors()
-def field_trial(lebalname):
-    global prompt
-    name = 0
-    while name != 3:
-        field_trial.prompt = input(lebalname)
-        if lebalname == "Username: " or lebalname == "Password: " or lebalname == "Confirm Password: " :
-            field_trial.valid = validate.fieldcheck(field_trial.prompt)
-            if field_trial.valid == validate.emptyerror:
-                return validate.emptyerror  
-            elif field_trial.valid == validate.lengtherror:
-                return validate.lengtherror 
-            else:
-                return field_trial.prompt
-
-def password_match_trail(password, confirm_password):
-    name = 0
-    while name != 3:
-        password_match_trail.valid = validate.password_match(password, confirm_password)
-        if password_match_trail.valid == validate.passwordmismatch:
-            name +=1
-            return validate.passwordmismatch
-        else:
-            return password_match_trail.valid
-        # if password == confirm_password:
-        #     return True
-        #     name = 3
-        # elif password != confirm_password:
-        #     print("fail")
-        #     name +=1       
-if signup_or_login != 1 and signup_or_login != 2:
-    raise Exception("Enter 1 to Login or 2 to Signup as new user")
-elif signup_or_login == 1: 
-    prompt = field_trial("Username: ")
-    if  prompt != field_trial.prompt:
-        print(prompt)
+# method to create todo with login user
+def Newtask(current_user):
+    title = input("title: ")
+    if not validateInput(title):
+        trial = 1
+        while trial < 3:
+            title = input("Title: ")
+            trial +=1
     else:
-        prompt_pass = field_trial("Password: ")
-        if  prompt_pass != field_trial.prompt:
-            print(prompt_pass)
+        description = input("Description: ")
+        if not validateInput(description):
+            trial = 1
+            while trial < 3:
+                description = input("Description: ")
+                trial +=1
         else:
-            user = User()
-            user.loginUser(prompt, prompt_pass)
-            print("Login successful")
-
-
-elif signup_or_login == 2: 
-    prompt = field_trial("Username: ")
-    if  prompt != field_trial.prompt:
-        print(prompt)
-    else:
-        # global prompt_pass
-        prompt_pass = field_trial("Password: ")
-        if  prompt_pass != field_trial.prompt:
-            print(prompt_pass)
-        else:
-            prompt_confirm = field_trial("Confirm Password: ")
-            if prompt_confirm != field_trial.prompt:
-                print(prompt_confirm)
+            date_created = input("Today Date: ")
+            if not validateInput(date_created):
+                trial = 1
+                while trial < 3:
+                    date_created = input("Today Date: ")
+                    trial +=1
             else:
-                prompt_confirm2 = password_match_trail(prompt_pass, prompt_confirm)
-                # print(prompt_confirm2)
-                if prompt_confirm2 == validate.passwordmismatch:
-                    print("Fail")
+                due_date = input("End Date: ")
+                if not validateInput(due_date):
+                    trial = 1
+                    while trial < 3:
+                        due_date = input("End Date: ")
+                        trial +=1
                 else:
-                    user = User(prompt, prompt_pass, prompt_confirm)
-                    user.registerUser()
-                    print("Name saved")
+                    create = CreateTask(title, description, date_created, due_date, current_user)
+                    submit = create.createTask()
+                    if submit == None:
+                        print("OOPS! Unable to add task")
+                    else:
+                        viewtask(current_user)
+
+# Method to signup new user 
+def signup():
+    username = input("Username: ")
+    if not validateInput(username):
+        trial = 1
+        while trial < 3:
+            username = input("Usename: ")
+            trial +=1
+    else:
+        password = input("Password: ")
+        if not validateInput(password):
+            trial = 1
+            while trial < 3:
+                password = input("Password: ")
+                trial +=1
+        else:
+            confirm_password = input("Confirm Password: ")
+            if not validateInput(confirm_password):
+                trial = 1
+                while trial < 3:
+                    password = input("Password: ")
+                    trial +=1
+            elif not matchPassword(password, confirm_password):
+                trial = 1
+                while trial < 3:
+                    confirm_password = input("Confirm Password: ")
+                    trial +=1
+            else:
+                signup = Register(username, password, confirm_password)
+                save = signup.saveDetails()
+                if save == None:
+                    return "OOPS!!! Unable to registry you. 'TRY AGAIN'"
+                else:
+                    return "Signed up sucessfully"
+
+# method to login new user 
+def login():
+    username = input("Username: ")
+    if not validateInput(username):
+        trial = 1
+        while trial < 3:
+            username = input("Usename: ")
+            trial +=1
+    else:
+        password = input("Password: ")
+        if not validateInput(password):
+            trial = 1
+            while trial < 3:
+                password = input("Password: ")
+                trial +=1
+        else:
+            login = Login(username, password)
+            current_user = login.confirmUser()
+            if current_user == None:
+                print("Invalid Credentials")
+            else:
+                print("\nTo View Existing todo? Enter 'View'\nTo Add New Todo? Enter 'New'\n")
+                userInput = input("Type here..... ")
+                userInput = userInput.capitalize()
+
+                if userInput == "View":
+                    viewtask(current_user)
+                elif userInput == "New":
+                    Newtask(current_user)
+                else:
+                    wrongOption()
+
+
+# method to validate user enter fields
+def validateInput(field):
+    # username = input("Username: ")
+    if field == '':
+         print("This field is required")
+    elif len(field) < 5:
+        print("field should be more than 5 chars min")
+    else:
+        return True
+
+# function to check if user password match confirm password
+def matchPassword(password, confirm_password):
+    if password != confirm_password:
+        print(f"\n Please enter same 'Confirm Password' as {password}!")
+    else:
+        return True
+
+
+def wrongOption():
+    print("Sorry! Please enter corresponding option for your response.\nRun program again by 'py run.py'")
